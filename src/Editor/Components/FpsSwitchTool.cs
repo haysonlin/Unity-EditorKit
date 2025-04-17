@@ -83,9 +83,9 @@ namespace Hayson.EditorKit.Component
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     EditorGUILayout.LabelField(manualSettingHeaderText, manualSettingFieldHeaderMaxWidth);
-                    customFps = EditorGUILayout.IntField(customFps, manualSettingFieldHeaderMaxWidth);
+                    customFps = EditorGUILayout.IntField(customFps, manualSettingFieldMaxWidth);
 
-                    if (GUILayout.Button(manualSettingBtnText, manualSettingFieldMaxWidth))
+                    if (GUILayout.Button(manualSettingBtnText))
                         SetFps(customFps);
 
                     if (GUILayout.Button(previousValueTheaderText))
