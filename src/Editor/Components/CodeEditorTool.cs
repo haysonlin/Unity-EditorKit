@@ -4,16 +4,24 @@ using Unity.CodeEditor;
 using UnityEditor;
 using UnityEngine;
 
-namespace EditorKit.Component
+namespace Hayson.EditorKit.Component
 {
     [InitializeOnLoad]
     class CodeEditorTool : IDrawableComponent
     {
         readonly string headerText = "CodeEditor Switcher";
+        readonly string selectorHeaderText = "Selected";
+        readonly string domainReloadBtnText = "Reload Domain";
+        readonly string openProjectBtnText = "Open C# Project";
+        readonly string openProjectCommandPath = "Assets/Open C# Project";
 
         Style style;
+        GUIStyle labelStyle;
+        GUILayoutOption selectorHeaderMaxWidth;
+
         string[] editorOptions = null;
         Dictionary<string, string> editorOptionsDict = null;
+
         CodeEditor codeEditor = null;
         string latestSetEditor = string.Empty;
 
@@ -34,46 +42,51 @@ namespace EditorKit.Component
 
         void IDrawableComponent.OnUpdateFrame(Rect rect)
         {
+            if (labelStyle == null)
+            {
+                labelStyle = new GUIStyle(EditorStyles.label);
+                selectorHeaderMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent(selectorHeaderText)).x);
+            }
+
             using (new EditorGUILayout.VerticalScope(style.Block))
             {
                 EditorGUILayout.LabelField(headerText, style.H1, style.Title_H1);
 
-                var currCodeEditorName = codeEditor.CurrentInstallation.Name;
-                var selectedOptionIdx = EditorGUILayout.Popup("選擇編輯器 :", GetSelectedEditorIndex(currCodeEditorName), editorOptions);
-
-                if (selectedOptionIdx != -1 && editorOptions[selectedOptionIdx] != latestSetEditor)
+                using (new EditorGUILayout.HorizontalScope())
                 {
-                    var paths = editorOptionsDict.Keys;
-                    var i = 0;
-                    foreach (var path in paths)
+                    EditorGUILayout.LabelField(selectorHeaderText, selectorHeaderMaxWidth);
+                    var currCodeEditorName = codeEditor.CurrentInstallation.Name;
+                    var selectedOptionIdx = EditorGUILayout.Popup(GetSelectedEditorIndex(currCodeEditorName), editorOptions);
+
+                    if (selectedOptionIdx != -1 && editorOptions[selectedOptionIdx] != latestSetEditor)
                     {
-                        if (i == selectedOptionIdx)
+                        var paths = editorOptionsDict.Keys;
+                        var i = 0;
+                        foreach (var path in paths)
                         {
-                            SetEditor(path);
-                            break;
+                            if (i == selectedOptionIdx)
+                            {
+                                SetEditor(path);
+                                break;
+                            }
+                            i++;
                         }
-                        i++;
                     }
                 }
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    if (GUILayout.Button("重載腳本域"))
-                    {
-                        EditorUtility.RequestScriptReload();
-                    }
-                    if (GUILayout.Button("重建專案文件"))
+                    if (GUILayout.Button(openProjectBtnText))
                     {
                         AssetDatabase.Refresh();
                         CodeEditor.Editor.CurrentCodeEditor.SyncAll();
+                        EditorApplication.ExecuteMenuItem(openProjectCommandPath);
                     }
-                    if (GUILayout.Button("開啟C#專案"))
+                    if (GUILayout.Button(domainReloadBtnText))
                     {
-                        EditorApplication.ExecuteMenuItem("Assets/Open C# Project");
+                        EditorUtility.RequestScriptReload();
                     }
                 }
-
-
             }
         }
 
@@ -84,7 +97,7 @@ namespace EditorKit.Component
                 if (editorOptions[i] == selectedEditorPath)
                     return i;
             }
-            return -1;
+            return 0;
         }
 
         void SetEditor(string path)

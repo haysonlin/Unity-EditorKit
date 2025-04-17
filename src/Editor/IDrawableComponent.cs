@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace EditorKit
+namespace Hayson.EditorKit
 {
     public interface IDrawableComponent
     {

@@ -1,13 +1,13 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace EditorKit.Component
+namespace Hayson.EditorKit.Component
 {
     [InitializeOnLoad]
     class SpritePackerSwitchTool : IDrawableComponent
     {
         readonly string[] toolHeader = new string[] { "SpritePacker : On", "SpritePacker : Off", };
-        readonly string[] optionsTitle = new string[] { "啟用", "禁用", };
+        readonly string[] optionsTitle = new string[] { "Enable", "Disable", };
 
         Style style;
         int currStateIndex;

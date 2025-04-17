@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace EditorKit.Componet
+namespace Hayson.EditorKit.Component
 {
     [InitializeOnLoad]
     class TimeScaleSwitchTool : IDrawableComponent
@@ -10,15 +10,16 @@ namespace EditorKit.Componet
         record Option(string Title, float Value);
 
         readonly string headerPrefix = "TimeScale";
-        readonly string customSettingHeaderText = "手動設定";
-        readonly string customSettingButtonText = "設定";
-        readonly string setPreviousValueText = "設回上次套用值";
+        readonly string manualSettingHeaderText = "Manual";
+        readonly string manualSettingBtnText = "Apply";
+        readonly string setPreviousValueBtnText = "Set previous value";
 
-        readonly GUILayoutOption[] quickActionBtn = new GUILayoutOption[] { GUILayout.Height(22) };
-        GUILayoutOption maxWidth_4char;
-        GUILayoutOption maxWidth_80px;
-        readonly float fieldHeaderRightPadding = 6;
-        readonly float widthPerChineseChar = 12;
+        GUILayoutOption[] toggleLayoutOptions;
+        GUILayoutOption manualSettingFieldHeaderMaxWidth;
+        GUILayoutOption manualSettingFieldMaxWidth;
+
+        Style style;
+        GUIStyle labelStyle;
 
         string previousValueTheaderText;
         string headerText;
@@ -39,8 +40,6 @@ namespace EditorKit.Componet
         };
         string[] optionsTitle;
 
-        Style style;
-
         static TimeScaleSwitchTool()
         {
             ComponentContainer.Register(typeof(TimeScaleSwitchTool));
@@ -50,8 +49,6 @@ namespace EditorKit.Componet
         {
             style = ComponentContainer.StyleSheet;
             optionsTitle = defaultOptions.Select(el => el.Title).ToArray();
-            maxWidth_4char = GUILayout.MaxWidth((customSettingHeaderText.Length * widthPerChineseChar) + fieldHeaderRightPadding);
-            maxWidth_80px = GUILayout.MaxWidth(80);
             SetTimeScale(Time.timeScale);
         }
 
@@ -59,6 +56,14 @@ namespace EditorKit.Componet
 
         void IDrawableComponent.OnUpdateFrame(Rect rect)
         {
+            if (labelStyle == null)
+            {
+                labelStyle = new GUIStyle(EditorStyles.label);
+                manualSettingFieldHeaderMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent(manualSettingHeaderText)).x);
+                manualSettingFieldMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent("99999999")).x);
+                toggleLayoutOptions = new GUILayoutOption[] { GUILayout.Height(22) };
+            }
+
             using (new EditorGUILayout.VerticalScope(style.Block))
             {
                 EditorGUILayout.LabelField(headerText, style.H1, style.Title_H1);
@@ -69,7 +74,7 @@ namespace EditorKit.Componet
                     SetTimeScale(inUseTimeScale);
                 }
 
-                var selectedOptionIdx = GUILayout.Toolbar(GetSelectedIdxByTimeScale(latestSetTimeScale), optionsTitle, quickActionBtn);
+                var selectedOptionIdx = GUILayout.Toolbar(GetSelectedIdxByTimeScale(latestSetTimeScale), optionsTitle, toggleLayoutOptions);
                 if (selectedOptionIdx != -1 && defaultOptions[selectedOptionIdx].Value != latestSetTimeScale)
                 {
                     SetTimeScale(defaultOptions[selectedOptionIdx].Value);
@@ -79,10 +84,10 @@ namespace EditorKit.Componet
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUILayout.LabelField(customSettingHeaderText, maxWidth_4char);
-                    customTimeScale = EditorGUILayout.FloatField(customTimeScale, maxWidth_4char);
+                    EditorGUILayout.LabelField(manualSettingHeaderText, manualSettingFieldHeaderMaxWidth);
+                    customTimeScale = EditorGUILayout.FloatField(customTimeScale, manualSettingFieldMaxWidth);
 
-                    if (GUILayout.Button(customSettingButtonText, maxWidth_80px))
+                    if (GUILayout.Button(manualSettingBtnText))
                         SetTimeScale(customTimeScale);
 
                     if (GUILayout.Button(previousValueTheaderText))
@@ -104,7 +109,7 @@ namespace EditorKit.Componet
         void SetTimeScale(float value)
         {
             previousSetTimeScale = latestSetTimeScale;
-            previousValueTheaderText = $"{setPreviousValueText} : {previousSetTimeScale}x";
+            previousValueTheaderText = $"{setPreviousValueBtnText} : {previousSetTimeScale}x";
 
             Time.timeScale = value;
             latestSetTimeScale = value;

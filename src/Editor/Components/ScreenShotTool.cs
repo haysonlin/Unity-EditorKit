@@ -3,13 +3,16 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace EditorKit.Component
+namespace Hayson.EditorKit.Component
 {
     [InitializeOnLoad]
     // 由[李家駿]製作
     class ScreenShotTool : IDrawableComponent
     {
         Style style;
+        GUIStyle labelStyle;
+
+        GUILayoutOption headerTextWidth;
 
         private string path;
 
@@ -27,30 +30,35 @@ namespace EditorKit.Component
 
         void IDrawableComponent.OnUpdateFrame(Rect rect)
         {
+            if (labelStyle == null)
+            {
+                labelStyle = new GUIStyle(EditorStyles.label);
+                headerTextWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent("Save Path")).x);
+            }
+
             GUILayout.BeginVertical(style.Block);
             {
-                EditorGUILayout.LabelField("截圖工具", style.H1, style.Title_H1);
-
+                EditorGUILayout.LabelField("GameView Screenshot Tool", style.H1, style.Title_H1);
                 GUILayout.BeginVertical();
                 {
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("儲存路徑", GUILayout.Width(54));
+                        EditorGUILayout.LabelField("Save Path", headerTextWidth);
                         path = EditorGUILayout.TextField(path);
 
-                        if (GUILayout.Button("選擇", style.Button_md))
+                        if (GUILayout.Button("Select", style.Button_md))
                         {
-                            path = EditorUtility.OpenFolderPanel("選擇儲存路徑", path, "");
+                            path = EditorUtility.OpenFolderPanel("Select Save Path", path, "");
                         }
                     }
                     EditorGUILayout.EndHorizontal();
 
                     EditorGUILayout.BeginHorizontal();
-                    if (GUILayout.Button("一鍵截圖", style.Button))
+                    if (GUILayout.Button("Execute", style.Button))
                     {
                         var imagePath = Path.Combine(path, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
                         ScreenCapture.CaptureScreenshot(imagePath);
-                        Debug.Log($"截圖儲存至 : {imagePath}");
+                        Debug.Log($"Screenshot saved to : {imagePath}");
                     }
                     EditorGUILayout.EndHorizontal();
                 }
