@@ -98,6 +98,7 @@ namespace Hayson.EditorKit
                 stylesheet.Setup();
             }
 
+            // >Todo: 改為由主容器統一繪製子容器框與標題(?)，相關方向待確認
             using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition))
             {
                 scrollPosition = view.scrollPosition;
