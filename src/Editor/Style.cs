@@ -19,7 +19,7 @@ namespace Hayson.EditorKit
 
         public void Setup()
         {
-            H1 = new(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold };
+            H1 = new(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
             Title_H1 = new[] { GUILayout.Height(22) };
             FieldLabel_md = new[] { GUILayout.Width(100) };
             Block = new(EditorStyles.helpBox) { padding = new RectOffset(5, 5, 5, 5) };

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -27,6 +28,8 @@ namespace Hayson.EditorKit
         static readonly List<IDrawableComponent> components = new();
         static readonly Style stylesheet = new();
 
+        Vector2 scrollPosition = Vector2.zero;
+
         public static Style StyleSheet => stylesheet;
 
         public static void Register(Type t)
@@ -47,8 +50,23 @@ namespace Hayson.EditorKit
                 typeof(Component.CodeEditorTool),
                 typeof(Component.ScreenShotTool),
             };
-
             foreach (var item in defaultComps)
+            {
+                var instance = (IDrawableComponent)Activator.CreateInstance(item);
+
+                if (instance != null)
+                {
+                    components.Add(instance);
+                    instance.OnEnable();
+                }
+                else
+                {
+                    Debug.LogError($"Failed to create instance of {item}");
+                }
+            }
+
+            var customComps = registedTypes.Except(defaultComps);
+            foreach (var item in customComps)
             {
                 var instance = (IDrawableComponent)Activator.CreateInstance(item);
 
@@ -80,9 +98,13 @@ namespace Hayson.EditorKit
                 stylesheet.Setup();
             }
 
-            foreach (var comp in components)
+            using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition))
             {
-                comp.OnUpdateFrame(position);
+                scrollPosition = view.scrollPosition;
+                foreach (var comp in components)
+                {
+                    comp.OnUpdateFrame(position);
+                }
             }
         }
     }
