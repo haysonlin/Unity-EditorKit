@@ -111,7 +111,7 @@ namespace Hayson.EditorKit.Component
 
             Application.targetFrameRate = value;
             latestSetFps = value;
-            headerText = $"{headerPrefix} : {(value == -1 ? "Unlimited" : value)}";
+            headerText = $"{headerPrefix} : {(value <= 0 ? "Unlimited" : value)}";
         }
     }
 }
