@@ -10,7 +10,7 @@ namespace Hayson.EditorKit.Component
     {
         record Option(string Title, int Value);
 
-        readonly string headerPrefix = "FPS";
+        readonly string headerPrefix = "Target FPS";
         readonly string manualSettingHeaderText = "Manual";
         readonly string manualSettingBtnText = "Apply";
         readonly string setPreviousValueBtnText = "Set previous value";
