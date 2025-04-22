@@ -6,8 +6,8 @@ namespace Hayson.EditorKit.Component
     [InitializeOnLoad]
     class SpritePackerSwitchTool : IDrawableComponent
     {
-        readonly string[] toolHeader = new string[] { "SpritePacker : On", "SpritePacker : Off", };
-        readonly string[] optionsTitle = new string[] { "Enable", "Disable", };
+        readonly string toolHeader = "SpritePacker Mode";
+        readonly string[] optionsTitle = new string[] { "Disable", "V1", "V2" };
 
         Style style;
         int currStateIndex;
@@ -29,7 +29,7 @@ namespace Hayson.EditorKit.Component
         {
             using (new EditorGUILayout.VerticalScope(style.Block))
             {
-                EditorGUILayout.LabelField(GetToolHeader(), style.H1, style.Title_H1);
+                EditorGUILayout.LabelField(toolHeader, style.H1, style.Title_H1);
 
                 var selectedOptionIdx = GUILayout.Toolbar(GetCurrentPackerStateIndex(), optionsTitle);
 
@@ -37,36 +37,26 @@ namespace Hayson.EditorKit.Component
                 {
                     switch (selectedOptionIdx)
                     {
-                        case 0: EnablePacker(); break;
-                        case 1: DisablePacker(); break;
+                        case 0: SetPackerMode(SpritePackerMode.Disabled); break;
+                        case 1: SetPackerMode(SpritePackerMode.AlwaysOnAtlas); break;
+                        case 2: SetPackerMode(SpritePackerMode.SpriteAtlasV2); break;
                     }
                     currStateIndex = selectedOptionIdx;
                 }
             }
         }
 
-        string GetToolHeader() => currStateIndex switch
-        {
-            0 => toolHeader[0],
-            _ => toolHeader[1],
-        };
-
         int GetCurrentPackerStateIndex() => EditorSettings.spritePackerMode switch
         {
-            SpritePackerMode.AlwaysOnAtlas => 0,
-            SpritePackerMode.Disabled => 1,
+            SpritePackerMode.Disabled => 0,
+            SpritePackerMode.AlwaysOnAtlas => 1,
+            SpritePackerMode.SpriteAtlasV2 => 2,
             _ => -1
         };
 
-        void EnablePacker()
+        void SetPackerMode(SpritePackerMode mode)
         {
-            EditorSettings.spritePackerMode = SpritePackerMode.AlwaysOnAtlas;
-            AssetDatabase.SaveAssets();
-        }
-
-        void DisablePacker()
-        {
-            EditorSettings.spritePackerMode = SpritePackerMode.Disabled;
+            EditorSettings.spritePackerMode = mode;
             AssetDatabase.SaveAssets();
         }
     }

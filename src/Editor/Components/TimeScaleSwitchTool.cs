@@ -109,11 +109,11 @@ namespace Hayson.EditorKit.Component
         void SetTimeScale(float value)
         {
             previousSetTimeScale = latestSetTimeScale;
-            previousValueTheaderText = $"{setPreviousValueBtnText} : {previousSetTimeScale}x";
+            previousValueTheaderText = $"{setPreviousValueBtnText} : {previousSetTimeScale}";
 
             Time.timeScale = value;
             latestSetTimeScale = value;
-            headerText = $"{headerPrefix} : {value}x";
+            headerText = $"{headerPrefix} : {value}";
         }
     }
 }

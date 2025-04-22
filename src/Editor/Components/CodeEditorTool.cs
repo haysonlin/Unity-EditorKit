@@ -9,7 +9,7 @@ namespace Hayson.EditorKit.Component
     [InitializeOnLoad]
     class CodeEditorTool : IDrawableComponent
     {
-        readonly string headerText = "CodeEditor Switcher";
+        readonly string headerText = "CodeEditor Tool";
         readonly string selectorHeaderText = "Selected";
         readonly string domainReloadBtnText = "Reload Domain";
         readonly string openProjectBtnText = "Open C# Project";

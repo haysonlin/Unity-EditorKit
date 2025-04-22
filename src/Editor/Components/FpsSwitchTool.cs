@@ -107,7 +107,7 @@ namespace Hayson.EditorKit.Component
         void SetFps(int value)
         {
             previousSetTimeScale = latestSetFps;
-            previousValueTheaderText = $"{setPreviousValueBtnText} : {previousSetTimeScale}x";
+            previousValueTheaderText = $"{setPreviousValueBtnText} : {previousSetTimeScale}";
 
             Application.targetFrameRate = value;
             latestSetFps = value;

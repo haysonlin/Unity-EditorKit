@@ -18,7 +18,11 @@ namespace Hayson.EditorKit
 
         void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)
         {
-            menu.AddItem(new GUIContent("Open repository in GitHub"), false, () =>
+            // >Todo: 開啟面板編輯模式
+            // menu.AddItem(new GUIContent("🛠️ Switch edit mode"), false, () =>
+            // {
+            // });
+            menu.AddItem(new GUIContent("🌎 Open repository in GitHub"), false, () =>
             {
                 Application.OpenURL(Config.RepositoryUrl);
             });
@@ -98,8 +102,11 @@ namespace Hayson.EditorKit
                 stylesheet.Setup();
             }
 
-            // >Todo: 改為由主容器統一繪製子容器框與標題(?)，相關方向待確認
-            using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition))
+            var guiStyle = new GUIStyle();
+            guiStyle.fixedWidth = position.width;
+
+            // >Todo: 改為由主容器統一繪製子容器框與標題
+            using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition, guiStyle))
             {
                 scrollPosition = view.scrollPosition;
                 foreach (var comp in components)
