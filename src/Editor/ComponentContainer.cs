@@ -102,16 +102,16 @@ namespace Hayson.EditorKit
                 stylesheet.Setup();
             }
 
-            var guiStyle = new GUIStyle();
-            guiStyle.fixedWidth = position.width;
-
             // >Todo: 改為由主容器統一繪製子容器框與標題
-            using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition, guiStyle))
+            using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition, false, false))
             {
                 scrollPosition = view.scrollPosition;
-                foreach (var comp in components)
+                using (new EditorGUILayout.VerticalScope())
                 {
-                    comp.OnUpdateFrame(position);
+                    foreach (var comp in components)
+                    {
+                        comp.OnUpdateFrame(position);
+                    }
                 }
             }
         }
