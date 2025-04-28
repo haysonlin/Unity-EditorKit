@@ -1,3 +1,17 @@
 {
-	"name": "com.haysonlin.editorkit.Editor"
+	"name": "com.haysonlin.editorkit.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Addressables"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "noEngineReferences": false
 }
