@@ -63,4 +63,4 @@ A container for custom Editor tools, allowing you to register your own Editor To
 # Installation
 
 1.  Using UPM Package
-    1.  In the Unity Package Manager, use Add package from git URL and enter [`https://github.com/haysonlin/Unity-EditorKit.git?path=src`](https://github.com/haysonlin/Unity-EditorKit.git?path=src)
+    1.  In the Unity Package Manager, use Add package from git URL and enter [`https://github.com/haysonlin/Unity-EditorKit.git?path=Project/Assets/EditorKit`](https://github.com/haysonlin/Unity-EditorKit.git?path=Project/Assets/EditorKit)

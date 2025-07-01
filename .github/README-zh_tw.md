@@ -65,4 +65,4 @@
 # 安裝方式
 
 1. 使用 UPM Package
-    1. 在 Unity Package Manager 中透過 Add package from git URL 帶入 [`https://github.com/haysonlin/Unity-EditorKit.git?path=src`](https://github.com/haysonlin/Unity-EditorKit.git?path=src)
+    1. 在 Unity Package Manager 中透過 Add package from git URL 帶入 [`https://github.com/haysonlin/Unity-EditorKit.git?path=Project/Assets/EditorKit`](https://github.com/haysonlin/Unity-EditorKit.git?path=Project/Assets/EditorKit)
