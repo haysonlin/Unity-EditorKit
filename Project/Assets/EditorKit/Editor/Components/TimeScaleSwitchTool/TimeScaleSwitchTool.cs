@@ -4,9 +4,15 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    [InitializeOnLoad]
     class TimeScaleSwitchTool : IDrawableComponent
     {
+        [InitializeOnLoadMethod]
+        static void RegisterToContainer()
+        {
+            ComponentConfig config = new(nameof(TimeScaleSwitchTool));
+            ComponentContainer.Register<TimeScaleSwitchTool>(config);
+        }
+
         record Option(string Title, float Value);
 
         readonly string headerPrefix = "TimeScale";
@@ -39,12 +45,6 @@ namespace Hayson.EditorKit.Component
             new ("10",10f ),
         };
         string[] optionsTitle;
-
-        static TimeScaleSwitchTool()
-        {
-            ComponentConfig config = new(nameof(TimeScaleSwitchTool));
-            ComponentContainer.Register<TimeScaleSwitchTool>(config);
-        }
 
         void IDrawableComponent.OnEnable()
         {

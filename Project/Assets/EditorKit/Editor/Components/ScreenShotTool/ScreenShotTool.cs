@@ -6,22 +6,22 @@ using Hayson.EditorKit;
 
 namespace EditorKitComponent
 {
-    [InitializeOnLoad]
     // 由[李家駜]製作，由[李育杰]修改
     class ScreenShotTool : IDrawableComponent
     {
+        [InitializeOnLoadMethod]
+        static void RegisterToContainer()
+        {
+            ComponentConfig config = new(nameof(ScreenShotTool));
+            ComponentContainer.Register<ScreenShotTool>(config);
+        }
+
         Style style;
         GUIStyle labelStyle;
 
         GUILayoutOption headerTextWidth;
         private Camera mainCamera;
         private string path;
-
-        static ScreenShotTool()
-        {
-            ComponentConfig config = new(nameof(ScreenShotTool));
-            ComponentContainer.Register<ScreenShotTool>(config);
-        }
 
         void IDrawableComponent.OnEnable()
         {

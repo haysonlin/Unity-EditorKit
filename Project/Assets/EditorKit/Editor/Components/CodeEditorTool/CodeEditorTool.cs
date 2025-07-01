@@ -6,9 +6,15 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    [InitializeOnLoad]
     class CodeEditorTool : IDrawableComponent
     {
+        [InitializeOnLoadMethod]
+        static void RegisterToContainer()
+        {
+            ComponentConfig config = new(nameof(CodeEditorTool));
+            ComponentContainer.Register<CodeEditorTool>(config);
+        }
+
         readonly string headerText = "CodeEditor";
         readonly string selectorHeaderText = "Options";
         readonly string domainReloadBtnText = "Reload Domain";
@@ -26,12 +32,6 @@ namespace Hayson.EditorKit.Component
         string[] editorOptionsName;
 
         int selectedOptionIdx;
-
-        static CodeEditorTool()
-        {
-            ComponentConfig config = new(nameof(CodeEditorTool));
-            ComponentContainer.Register<CodeEditorTool>(config);
-        }
 
         void IDrawableComponent.OnEnable()
         {

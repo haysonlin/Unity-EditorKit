@@ -3,9 +3,15 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    [InitializeOnLoad]
     class SpritePackerSwitchTool : IDrawableComponent
     {
+        [InitializeOnLoadMethod]
+        static void RegisterToContainer()
+        {
+            ComponentConfig config = new(nameof(SpritePackerSwitchTool));
+            ComponentContainer.Register<SpritePackerSwitchTool>(config);
+        }
+
         readonly string toolHeader = "SpritePacker :";
         readonly string selectorHeaderText = "Options";
         readonly string[] optionsTitle = new string[] { "Disable", "V1", "V2" };
@@ -16,12 +22,6 @@ namespace Hayson.EditorKit.Component
 
         int currStateIndex;
         int selectedStateIndex;
-
-        static SpritePackerSwitchTool()
-        {
-            ComponentConfig config = new(nameof(SpritePackerSwitchTool));
-            ComponentContainer.Register<SpritePackerSwitchTool>(config);
-        }
 
         void IDrawableComponent.OnEnable()
         {

@@ -15,6 +15,18 @@ namespace Hayson.EditorKit
         public IReadOnlyList<Type> CompsType => compsType;
         public IReadOnlyList<IDrawableComponent> Comps => comps;
 
+        public void Clear()
+        {
+            compsType.Clear();
+            compsConfig.Clear();
+            comps.Clear();
+        }
+
+        public void ClearCompsInstance()
+        {
+            comps.Clear();
+        }
+
         public void RegisterComp<T>(ComponentConfig config) where T : IDrawableComponent
         {
             if (compsType.Contains(typeof(T)))
@@ -33,8 +45,12 @@ namespace Hayson.EditorKit
         }
     }
 
+    [InitializeOnLoad]
     public class ComponentContainer : EditorWindow, IHasCustomMenu
     {
+        public static readonly Style styleSheet = new();
+        static readonly ComponentStore useComponentStore = new();
+
         [MenuItem(MenuPath.EditorKitMenuPath, false, Priority.MainPanel)]
         static void CreateWindow()
         {
@@ -43,8 +59,10 @@ namespace Hayson.EditorKit
             window.minSize = new(400, 300);
         }
 
-        public static readonly Style styleSheet = new();
-        static readonly ComponentStore useComponentStore = new();
+        static ComponentContainer()
+        {
+            useComponentStore.Clear();
+        }
 
         public static void Register<T>(ComponentConfig config) where T : IDrawableComponent
         {
@@ -86,6 +104,7 @@ namespace Hayson.EditorKit
             {
                 comp.OnDisable();
             }
+            useComponentStore.ClearCompsInstance();
         }
 
         void OnGUI()

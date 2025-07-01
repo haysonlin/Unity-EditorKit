@@ -4,10 +4,16 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    [InitializeOnLoad]
     // 由[李育杰]提出需求
     class FpsSwitchTool : IDrawableComponent
     {
+        [InitializeOnLoadMethod]
+        static void RegisterToContainer()
+        {
+            ComponentConfig config = new(nameof(FpsSwitchTool));
+            ComponentContainer.Register<FpsSwitchTool>(config);
+        }
+
         record Option(string Title, int Value);
 
         readonly string headerPrefix = "Target FPS";
@@ -36,13 +42,6 @@ namespace Hayson.EditorKit.Component
             new ( "240", 240 ),
         };
         string[] optionsTitle;
-
-
-        static FpsSwitchTool()
-        {
-            ComponentConfig config = new(nameof(FpsSwitchTool));
-            ComponentContainer.Register<FpsSwitchTool>(config);
-        }
 
         void IDrawableComponent.OnEnable()
         {
