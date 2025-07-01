@@ -1,11 +1,12 @@
 {
-    "name": "com.haysonlin.editorkit.Editor",
+    "name": "com.haysonlin.editorkit.Scripts",
     "rootNamespace": "",
     "references": [
-        "com.haysonlin.editorkit.Scripts"
+        "com.haysonlin.editorkit.Plugins"
     ],
     "includePlatforms": [
-        "Editor"
+        "Editor",
+        "WindowsStandalone64"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
