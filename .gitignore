@@ -1,0 +1,16 @@
+Project/.vscode
+Project/Library/
+Project/Temp/
+Project/obj/
+Project/Logs/
+Project/UserSettings/
+Project/Unity.userprefs
+Project/Assembly-CSharp-Editor-vs.csproj
+Project/Assembly-CSharp-Editor.csproj
+Project/Assembly-CSharp-firstpass-vs.csproj
+Project/Assembly-CSharp-firstpass.csproj
+Project/Assembly-CSharp-vs.csproj
+Project/Assembly-CSharp.csproj
+Project/Unity-csharp.sln
+Project/Unity.sln
+Project/*.csproj
