@@ -15,13 +15,6 @@ namespace Hayson.EditorKit
         public IReadOnlyList<Type> CompsType => compsType;
         public IReadOnlyList<IDrawableComponent> Comps => comps;
 
-        public void Clear()
-        {
-            compsType.Clear();
-            compsConfig.Clear();
-            comps.Clear();
-        }
-
         public void RegisterComp<T>(ComponentConfig config) where T : IDrawableComponent
         {
             if (compsType.Contains(typeof(T)))
@@ -67,8 +60,6 @@ namespace Hayson.EditorKit
 
         void OnEnable()
         {
-            useComponentStore.Clear();
-
             // 預設工具集 
             // >Todo: 應由使用者自定義，相關功能待處理
             var defaultComps = new Type[] {
@@ -79,6 +70,7 @@ namespace Hayson.EditorKit
             };
             InstanceComps(defaultComps);
 
+            // 自定義工具集
             var customComps = useComponentStore.CompsType.Except(defaultComps);
             InstanceComps(customComps);
 
@@ -94,7 +86,6 @@ namespace Hayson.EditorKit
             {
                 comp.OnDisable();
             }
-            useComponentStore.Clear();
         }
 
         void OnGUI()
