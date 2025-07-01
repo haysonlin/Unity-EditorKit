@@ -40,12 +40,13 @@ namespace Hayson.EditorKit.Component
 
         static FpsSwitchTool()
         {
-            ComponentContainer.Register(typeof(FpsSwitchTool));
+            ComponentConfig config = new(nameof(FpsSwitchTool));
+            ComponentContainer.Register<FpsSwitchTool>(config);
         }
 
         void IDrawableComponent.OnEnable()
         {
-            style = ComponentContainer.StyleSheet;
+            style = ComponentContainer.styleSheet;
             optionsTitle = defaultOptions.Select(el => el.Title).ToArray();
             SetFps(Application.targetFrameRate);
         }

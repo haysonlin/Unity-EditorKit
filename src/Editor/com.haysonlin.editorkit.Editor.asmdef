@@ -1,9 +1,7 @@
 {
     "name": "com.haysonlin.editorkit.Editor",
     "rootNamespace": "",
-    "references": [
-        "com.haysonlin.editorkit.Scripts"
-    ],
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

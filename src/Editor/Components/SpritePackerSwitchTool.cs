@@ -6,20 +6,26 @@ namespace Hayson.EditorKit.Component
     [InitializeOnLoad]
     class SpritePackerSwitchTool : IDrawableComponent
     {
-        readonly string toolHeader = "SpritePacker Mode";
+        readonly string toolHeader = "SpritePacker :";
+        readonly string selectorHeaderText = "Options";
         readonly string[] optionsTitle = new string[] { "Disable", "V1", "V2" };
 
         Style style;
+        GUIStyle labelStyle;
+        GUILayoutOption selectorHeaderMaxWidth;
+
         int currStateIndex;
+        int selectedStateIndex;
 
         static SpritePackerSwitchTool()
         {
-            ComponentContainer.Register(typeof(SpritePackerSwitchTool));
+            ComponentConfig config = new(nameof(SpritePackerSwitchTool));
+            ComponentContainer.Register<SpritePackerSwitchTool>(config);
         }
 
         void IDrawableComponent.OnEnable()
         {
-            style = ComponentContainer.StyleSheet;
+            style = ComponentContainer.styleSheet;
             currStateIndex = GetCurrentPackerStateIndex();
         }
 
@@ -27,21 +33,31 @@ namespace Hayson.EditorKit.Component
 
         void IDrawableComponent.OnUpdateFrame(Rect rect)
         {
+            if (labelStyle == null)
+            {
+                labelStyle = new GUIStyle(EditorStyles.label);
+                selectorHeaderMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent(selectorHeaderText)).x);
+            }
+
             using (new EditorGUILayout.VerticalScope(style.Block))
             {
-                EditorGUILayout.LabelField(toolHeader, style.H1, style.Title_H1);
+                EditorGUILayout.LabelField($"{toolHeader} {optionsTitle[GetCurrentPackerStateIndex()]}", style.H1, style.Title_H1);
 
-                var selectedOptionIdx = GUILayout.Toolbar(GetCurrentPackerStateIndex(), optionsTitle);
-
-                if (selectedOptionIdx != -1 && selectedOptionIdx != currStateIndex)
+                using (new EditorGUILayout.HorizontalScope())
                 {
-                    switch (selectedOptionIdx)
+                    EditorGUILayout.LabelField(selectorHeaderText, selectorHeaderMaxWidth);
+                    selectedStateIndex = EditorGUILayout.Popup(selectedStateIndex, optionsTitle);
+
+                    if (GUILayout.Button("Apply"))
                     {
-                        case 0: SetPackerMode(SpritePackerMode.Disabled); break;
-                        case 1: SetPackerMode(SpritePackerMode.AlwaysOnAtlas); break;
-                        case 2: SetPackerMode(SpritePackerMode.SpriteAtlasV2); break;
+                        currStateIndex = selectedStateIndex;
+                        switch (currStateIndex)
+                        {
+                            case 0: SetPackerMode(SpritePackerMode.Disabled); break;
+                            case 1: SetPackerMode(SpritePackerMode.AlwaysOnAtlas); break;
+                            case 2: SetPackerMode(SpritePackerMode.SpriteAtlasV2); break;
+                        }
                     }
-                    currStateIndex = selectedOptionIdx;
                 }
             }
         }

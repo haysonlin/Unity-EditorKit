@@ -42,12 +42,13 @@ namespace Hayson.EditorKit.Component
 
         static TimeScaleSwitchTool()
         {
-            ComponentContainer.Register(typeof(TimeScaleSwitchTool));
+            ComponentConfig config = new(nameof(TimeScaleSwitchTool));
+            ComponentContainer.Register<TimeScaleSwitchTool>(config);
         }
 
         void IDrawableComponent.OnEnable()
         {
-            style = ComponentContainer.StyleSheet;
+            style = ComponentContainer.styleSheet;
             optionsTitle = defaultOptions.Select(el => el.Title).ToArray();
             SetTimeScale(Time.timeScale);
         }

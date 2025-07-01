@@ -9,33 +9,38 @@ namespace Hayson.EditorKit.Component
     [InitializeOnLoad]
     class CodeEditorTool : IDrawableComponent
     {
-        readonly string headerText = "CodeEditor Tool";
-        readonly string selectorHeaderText = "Selected";
+        readonly string headerText = "CodeEditor";
+        readonly string selectorHeaderText = "Options";
         readonly string domainReloadBtnText = "Reload Domain";
         readonly string openProjectBtnText = "Open C# Project";
         readonly string openProjectCommandPath = "Assets/Open C# Project";
+
+        string headerTextWithEditorName;
 
         Style style;
         GUIStyle labelStyle;
         GUILayoutOption selectorHeaderMaxWidth;
 
-        string[] editorOptions = null;
-        Dictionary<string, string> editorOptionsDict = null;
+        CodeEditor codeEditor;
+        string[] editorOptionsPath;
+        string[] editorOptionsName;
 
-        CodeEditor codeEditor = null;
-        string latestSetEditor = string.Empty;
+        int selectedOptionIdx;
 
         static CodeEditorTool()
         {
-            ComponentContainer.Register(typeof(CodeEditorTool));
+            ComponentConfig config = new(nameof(CodeEditorTool));
+            ComponentContainer.Register<CodeEditorTool>(config);
         }
 
         void IDrawableComponent.OnEnable()
         {
-            style = ComponentContainer.StyleSheet;
+            style = ComponentContainer.styleSheet;
             codeEditor = CodeEditor.Editor;
-            editorOptionsDict = codeEditor.GetFoundScriptEditorPaths();
-            editorOptions = editorOptionsDict.Values.ToArray();
+            var editorOptionsNameDict = codeEditor.GetFoundScriptEditorPaths();
+            editorOptionsPath = editorOptionsNameDict.Keys.ToArray();
+            editorOptionsName = editorOptionsNameDict.Values.ToArray();
+            SetEditor(GetEditorIndexByName(codeEditor.CurrentInstallation.Name));
         }
 
         void IDrawableComponent.OnDisable() { }
@@ -50,27 +55,16 @@ namespace Hayson.EditorKit.Component
 
             using (new EditorGUILayout.VerticalScope(style.Block))
             {
-                EditorGUILayout.LabelField(headerText, style.H1, style.Title_H1);
+                EditorGUILayout.LabelField(headerTextWithEditorName, style.H1, style.Title_H1);
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     EditorGUILayout.LabelField(selectorHeaderText, selectorHeaderMaxWidth);
-                    var currCodeEditorName = codeEditor.CurrentInstallation.Name;
-                    var selectedOptionIdx = EditorGUILayout.Popup(GetSelectedEditorIndex(currCodeEditorName), editorOptions);
+                    selectedOptionIdx = EditorGUILayout.Popup(selectedOptionIdx, editorOptionsName);
 
-                    if (selectedOptionIdx != -1 && editorOptions[selectedOptionIdx] != latestSetEditor)
+                    if (GUILayout.Button("Apply"))
                     {
-                        var paths = editorOptionsDict.Keys;
-                        var i = 0;
-                        foreach (var path in paths)
-                        {
-                            if (i == selectedOptionIdx)
-                            {
-                                SetEditor(path);
-                                break;
-                            }
-                            i++;
-                        }
+                        SetEditor(selectedOptionIdx);
                     }
                 }
 
@@ -78,7 +72,6 @@ namespace Hayson.EditorKit.Component
                 {
                     if (GUILayout.Button(openProjectBtnText))
                     {
-                        AssetDatabase.Refresh();
                         CodeEditor.Editor.CurrentCodeEditor.SyncAll();
                         EditorApplication.ExecuteMenuItem(openProjectCommandPath);
                     }
@@ -90,22 +83,30 @@ namespace Hayson.EditorKit.Component
             }
         }
 
-        int GetSelectedEditorIndex(string selectedEditorPath)
+        int GetEditorIndexByName(string editorName)
         {
-            for (int i = 0; i < editorOptions.Length; i++)
+            for (int i = 0; i < editorOptionsName.Length; i++)
             {
-                if (editorOptions[i] == selectedEditorPath)
+                if (editorOptionsName[i] == editorName)
                     return i;
             }
-            return 0;
+            return -1;
         }
 
-        void SetEditor(string path)
+        void SetEditor(int selectedOptionIdx)
         {
-            if (latestSetEditor == path) return;
-
-            latestSetEditor = path;
-            CodeEditor.SetExternalScriptEditor(path);
+            if (selectedOptionIdx == -1 || selectedOptionIdx >= editorOptionsName.Length)
+            {
+                headerTextWithEditorName = $"{headerText} : Missing";
+            }
+            else
+            {
+                var targetName = editorOptionsName[selectedOptionIdx];
+                var targetPath = editorOptionsPath[selectedOptionIdx];
+                headerTextWithEditorName = $"{headerText} : {targetName}";
+                CodeEditor.SetExternalScriptEditor(targetPath);
+            }
+            this.selectedOptionIdx = selectedOptionIdx;
         }
     }
 }

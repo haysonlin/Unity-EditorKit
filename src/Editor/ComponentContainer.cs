@@ -6,6 +6,40 @@ using UnityEngine;
 
 namespace Hayson.EditorKit
 {
+    class ComponentStore
+    {
+        static readonly List<Type> compsType = new();
+        static readonly List<ComponentConfig> compsConfig = new();
+        readonly List<IDrawableComponent> comps = new();
+
+        public IReadOnlyList<Type> CompsType => compsType;
+        public IReadOnlyList<IDrawableComponent> Comps => comps;
+
+        public void Clear()
+        {
+            compsType.Clear();
+            compsConfig.Clear();
+            comps.Clear();
+        }
+
+        public void RegisterComp<T>(ComponentConfig config) where T : IDrawableComponent
+        {
+            if (compsType.Contains(typeof(T)))
+            {
+                Debug.LogError($"Component {typeof(T)} is already registered");
+                return;
+            }
+
+            compsType.Add(typeof(T));
+            compsConfig.Add(config);
+        }
+
+        public void InstanceComp(IDrawableComponent comp)
+        {
+            comps.Add(comp);
+        }
+    }
+
     public class ComponentContainer : EditorWindow, IHasCustomMenu
     {
         [MenuItem(MenuPath.EditorKitMenuPath, false, Priority.MainPanel)]
@@ -16,90 +50,58 @@ namespace Hayson.EditorKit
             window.minSize = new(400, 300);
         }
 
-        void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)
+        public static readonly Style styleSheet = new();
+        static readonly ComponentStore useComponentStore = new();
+
+        public static void Register<T>(ComponentConfig config) where T : IDrawableComponent
         {
-            // >Todo: 開啟面板編輯模式
-            // menu.AddItem(new GUIContent("🛠️ Switch edit mode"), false, () =>
-            // {
-            // });
-            menu.AddItem(new GUIContent("🌎 Open repository in GitHub"), false, () =>
-            {
-                Application.OpenURL(Config.RepositoryUrl);
-            });
+            useComponentStore.RegisterComp<T>(config);
         }
 
-        static readonly HashSet<Type> registedTypes = new();
-        static readonly List<IDrawableComponent> components = new();
-        static readonly Style stylesheet = new();
+        void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)
+        {
+            menu.AddItem(new GUIContent("🌎 Open repository in GitHub"), false, () => Application.OpenURL(Config.RepositoryUrl));
+        }
 
         Vector2 scrollPosition = Vector2.zero;
 
-        public static Style StyleSheet => stylesheet;
-
-        public static void Register(Type t)
-        {
-            registedTypes.Add(t);
-        }
-
         void OnEnable()
         {
-            components.Clear();
+            useComponentStore.Clear();
 
             // 預設工具集 
             // >Todo: 應由使用者自定義，相關功能待處理
             var defaultComps = new Type[] {
-                typeof(Component.SpritePackerSwitchTool),
                 typeof(Component.TimeScaleSwitchTool),
                 typeof(Component.FpsSwitchTool),
+                typeof(Component.SpritePackerSwitchTool),
                 typeof(Component.CodeEditorTool),
-                typeof(Component.ScreenShotTool),
             };
-            foreach (var item in defaultComps)
+            InstanceComps(defaultComps);
+
+            var customComps = useComponentStore.CompsType.Except(defaultComps);
+            InstanceComps(customComps);
+
+            foreach (var comp in useComponentStore.Comps)
             {
-                var instance = (IDrawableComponent)Activator.CreateInstance(item);
-
-                if (instance != null)
-                {
-                    components.Add(instance);
-                    instance.OnEnable();
-                }
-                else
-                {
-                    Debug.LogError($"Failed to create instance of {item}");
-                }
-            }
-
-            var customComps = registedTypes.Except(defaultComps);
-            foreach (var item in customComps)
-            {
-                var instance = (IDrawableComponent)Activator.CreateInstance(item);
-
-                if (instance != null)
-                {
-                    components.Add(instance);
-                    instance.OnEnable();
-                }
-                else
-                {
-                    Debug.LogError($"Failed to create instance of {item}");
-                }
+                comp.OnEnable();
             }
         }
 
         void OnDisable()
         {
-            foreach (var comp in components)
+            foreach (var comp in useComponentStore.Comps)
             {
                 comp.OnDisable();
             }
-            components.Clear();
+            useComponentStore.Clear();
         }
 
         void OnGUI()
         {
-            if (stylesheet.IsSetup == false)
+            if (styleSheet.IsSetup == false)
             {
-                stylesheet.Setup();
+                styleSheet.Setup();
             }
 
             // >Todo: 改為由主容器統一繪製子容器框與標題
@@ -108,10 +110,25 @@ namespace Hayson.EditorKit
                 scrollPosition = view.scrollPosition;
                 using (new EditorGUILayout.VerticalScope())
                 {
-                    foreach (var comp in components)
+                    foreach (var comp in useComponentStore.Comps)
                     {
                         comp.OnUpdateFrame(position);
                     }
+                }
+            }
+        }
+
+        void InstanceComps(IEnumerable<Type> compList)
+        {
+            foreach (var el in compList)
+            {
+                if (Activator.CreateInstance(el) is IDrawableComponent instance)
+                {
+                    useComponentStore.InstanceComp(instance);
+                }
+                else
+                {
+                    Debug.LogError($"Failed to create instance of {el}");
                 }
             }
         }
