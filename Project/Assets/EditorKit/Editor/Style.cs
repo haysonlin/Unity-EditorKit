@@ -3,8 +3,10 @@ using UnityEngine;
 
 namespace Hayson.EditorKit
 {
-    public class Style
+    class StyleSheet
     {
+        public static StyleSheet Instance { get; } = new();
+
         public bool IsSetup { get; private set; }
 
         public GUIStyle H1 { get; private set; }
@@ -17,11 +19,15 @@ namespace Hayson.EditorKit
         public GUILayoutOption Button_xl { get; private set; }
         public GUILayoutOption Button_min_md { get; private set; }
 
+        StyleSheet() { }
+
         public void Setup()
         {
-            H1 = new(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
+            if (IsSetup) return;
+
+            H1 = new(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
             H1.normal.textColor = new Color(0.65f, 0.75f, 0.87f, 1);
-            Title_H1 = new[] { GUILayout.Height(22) };
+            Title_H1 = new[] { GUILayout.Height(20) };
             FieldLabel_md = new[] { GUILayout.Width(100) };
             Block = new(EditorStyles.helpBox) { padding = new RectOffset(5, 5, 5, 5) };
             Button = new(GUI.skin.button) { fontSize = 12 };

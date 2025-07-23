@@ -3,55 +3,42 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    class SpritePackerSwitchTool : IDrawableComponent
+    class SpritePackerSwitchTool : ComponentBase
     {
-        [InitializeOnLoadMethod]
-        static void RegisterToContainer()
-        {
-            ComponentConfig config = new(nameof(SpritePackerSwitchTool));
-            ComponentContainer.Register<SpritePackerSwitchTool>(config);
-        }
-
-        readonly string toolHeader = "SpritePacker :";
-        readonly string selectorHeaderText = "Options";
         readonly string[] optionsTitle = new string[] { "Disable", "V1", "V2" };
 
-        Style style;
-        GUIStyle labelStyle;
-        GUILayoutOption selectorHeaderMaxWidth;
+        int usingStateIndex;
 
-        int currStateIndex;
-        int selectedStateIndex;
-
-        void IDrawableComponent.OnEnable()
+        public static ComponentInfo Info => new("SpritePacker Switcher")
         {
-            style = ComponentContainer.styleSheet;
-            currStateIndex = GetCurrentPackerStateIndex();
+            Author = "林祐豪",
+            Version = "1.0.0"
+        };
+
+        protected override void OnAfterEnable()
+        {
+            usingStateIndex = GetCurrentPackerStateIndex();
         }
 
-        void IDrawableComponent.OnDisable() { }
-
-        void IDrawableComponent.OnUpdateFrame(Rect rect)
+        public override void OnUpdateGUI(Rect rect)
         {
-            if (labelStyle == null)
+            using (new EditorGUILayout.HorizontalScope())
             {
-                labelStyle = new GUIStyle(EditorStyles.label);
-                selectorHeaderMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent(selectorHeaderText)).x);
-            }
+                var tempSelectedStateIndex = GUILayout.Toolbar(usingStateIndex, optionsTitle);
 
-            using (new EditorGUILayout.VerticalScope(style.Block))
-            {
-                EditorGUILayout.LabelField($"{toolHeader} {optionsTitle[GetCurrentPackerStateIndex()]}", style.H1, style.Title_H1);
-
-                using (new EditorGUILayout.HorizontalScope())
+                if (tempSelectedStateIndex != usingStateIndex)
                 {
-                    EditorGUILayout.LabelField(selectorHeaderText, selectorHeaderMaxWidth);
-                    selectedStateIndex = EditorGUILayout.Popup(selectedStateIndex, optionsTitle);
+                    bool confirmed = EditorUtility.DisplayDialog(
+                        "Confirm",
+                        $"You are about to change the SpritePacker mode to [{optionsTitle[tempSelectedStateIndex]}]. Are you sure?",
+                        "Confirm",
+                        "Cancel"
+                    );
 
-                    if (GUILayout.Button("Apply"))
+                    if (confirmed)
                     {
-                        currStateIndex = selectedStateIndex;
-                        switch (currStateIndex)
+                        usingStateIndex = tempSelectedStateIndex;
+                        switch (usingStateIndex)
                         {
                             case 0: SetPackerMode(SpritePackerMode.Disabled); break;
                             case 1: SetPackerMode(SpritePackerMode.AlwaysOnAtlas); break;

@@ -2,47 +2,42 @@ using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using Hayson.EditorKit;
 
-namespace EditorKitComponent
+namespace Hayson.EditorKit.Component
 {
-    // 由[李家駜]製作，由[李育杰]修改
-    class ScreenShotTool : IDrawableComponent
+    class ScreenShotTool : ComponentBase
     {
-        [InitializeOnLoadMethod]
-        static void RegisterToContainer()
-        {
-            ComponentConfig config = new(nameof(ScreenShotTool));
-            ComponentContainer.Register<ScreenShotTool>(config);
-        }
-
-        Style style;
+        StyleSheet style;
         GUIStyle labelStyle;
 
         GUILayoutOption headerTextWidth;
-        private Camera mainCamera;
-        private string path;
+        [SerializeField] Camera mainCamera;
+        [SerializeField] string path;
 
-        void IDrawableComponent.OnEnable()
+        public static ComponentInfo Info => new("GameView ScreenShot Tool")
         {
-            style = ComponentContainer.styleSheet;
+            Author = "李家駿, 李育杰",
+            Version = "1.0.0"
+        };
+
+        protected override void OnAfterEnable()
+        {
+            style = StyleSheet.Instance;
         }
 
-        void IDrawableComponent.OnDisable()
-        {
-        }
-
-        void IDrawableComponent.OnUpdateFrame(Rect rect)
+        public override void OnUpdateGUI(Rect rect)
         {
             if (labelStyle == null)
             {
                 labelStyle = new GUIStyle(EditorStyles.label);
+            }
+            if (headerTextWidth == null)
+            {
                 headerTextWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent("Save Path")).x);
             }
 
-            GUILayout.BeginVertical(style.Block);
+            GUILayout.BeginVertical();
             {
-                EditorGUILayout.LabelField("GameView Screenshot Tool", style.H1, style.Title_H1);
                 GUILayout.BeginVertical();
                 {
                     using (new GUILayout.HorizontalScope())

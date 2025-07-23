@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using Unity.CodeEditor;
 using UnityEditor;
@@ -6,24 +5,13 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    class CodeEditorTool : IDrawableComponent
+    class CodeEditorTool : ComponentBase
     {
-        [InitializeOnLoadMethod]
-        static void RegisterToContainer()
-        {
-            ComponentConfig config = new(nameof(CodeEditorTool));
-            ComponentContainer.Register<CodeEditorTool>(config);
-        }
-
-        readonly string headerText = "CodeEditor";
-        readonly string selectorHeaderText = "Options";
+        readonly string selectorHeaderText = "Select";
         readonly string domainReloadBtnText = "Reload Domain";
         readonly string openProjectBtnText = "Open C# Project";
         readonly string openProjectCommandPath = "Assets/Open C# Project";
 
-        string headerTextWithEditorName;
-
-        Style style;
         GUIStyle labelStyle;
         GUILayoutOption selectorHeaderMaxWidth;
 
@@ -31,40 +19,50 @@ namespace Hayson.EditorKit.Component
         string[] editorOptionsPath;
         string[] editorOptionsName;
 
+        string currentInstallationEditor;
         int selectedOptionIdx;
 
-        void IDrawableComponent.OnEnable()
+        public static ComponentInfo Info => new("CodeEditor Tool")
         {
-            style = ComponentContainer.styleSheet;
+            Author = "林祐豪",
+            Version = "1.0.0"
+        };
+
+        protected override void OnAfterEnable()
+        {
             codeEditor = CodeEditor.Editor;
+
             var editorOptionsNameDict = codeEditor.GetFoundScriptEditorPaths();
-            editorOptionsPath = editorOptionsNameDict.Keys.ToArray();
-            editorOptionsName = editorOptionsNameDict.Values.ToArray();
-            SetEditor(GetEditorIndexByName(codeEditor.CurrentInstallation.Name));
+            editorOptionsPath ??= editorOptionsNameDict.Keys.ToArray();
+            editorOptionsName ??= editorOptionsNameDict.Values.ToArray();
+
+            var installationEditor = codeEditor.CurrentInstallation.Name;
+            if (currentInstallationEditor != installationEditor)
+            {
+                var selectedOptionIdx = GetEditorIndexByName(installationEditor);
+                SetEditor(selectedOptionIdx);
+            }
         }
 
-        void IDrawableComponent.OnDisable() { }
-
-        void IDrawableComponent.OnUpdateFrame(Rect rect)
+        public override void OnUpdateGUI(Rect rect)
         {
-            if (labelStyle == null)
-            {
-                labelStyle = new GUIStyle(EditorStyles.label);
-                selectorHeaderMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent(selectorHeaderText)).x);
-            }
+            ValidateStyles();
+            FetchCurrentEditor();
 
-            using (new EditorGUILayout.VerticalScope(style.Block))
+            using (new EditorGUILayout.VerticalScope())
             {
-                EditorGUILayout.LabelField(headerTextWithEditorName, style.H1, style.Title_H1);
-
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     EditorGUILayout.LabelField(selectorHeaderText, selectorHeaderMaxWidth);
-                    selectedOptionIdx = EditorGUILayout.Popup(selectedOptionIdx, editorOptionsName);
+                    var tempSelectedIdx = EditorGUILayout.Popup(selectedOptionIdx, editorOptionsName);
 
-                    if (GUILayout.Button("Apply"))
+                    if (tempSelectedIdx != selectedOptionIdx)
                     {
-                        SetEditor(selectedOptionIdx);
+                        if (ShowConfirmDialog(editorOptionsName[tempSelectedIdx]))
+                        {
+                            selectedOptionIdx = tempSelectedIdx;
+                            SetEditor(selectedOptionIdx);
+                        }
                     }
                 }
 
@@ -83,6 +81,27 @@ namespace Hayson.EditorKit.Component
             }
         }
 
+        void FetchCurrentEditor()
+        {
+            var _currentInstallationEditor = codeEditor.CurrentInstallation.Name;
+            if (currentInstallationEditor != _currentInstallationEditor)
+            {
+                SetEditor(GetEditorIndexByName(_currentInstallationEditor));
+            }
+        }
+
+        void ValidateStyles()
+        {
+            if (labelStyle == null)
+            {
+                labelStyle = new GUIStyle(EditorStyles.label);
+            }
+            if (selectorHeaderMaxWidth == null)
+            {
+                selectorHeaderMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent(selectorHeaderText)).x);
+            }
+        }
+
         int GetEditorIndexByName(string editorName)
         {
             for (int i = 0; i < editorOptionsName.Length; i++)
@@ -96,17 +115,24 @@ namespace Hayson.EditorKit.Component
         void SetEditor(int selectedOptionIdx)
         {
             if (selectedOptionIdx == -1 || selectedOptionIdx >= editorOptionsName.Length)
-            {
-                headerTextWithEditorName = $"{headerText} : Missing";
-            }
+            { }
             else
             {
-                var targetName = editorOptionsName[selectedOptionIdx];
                 var targetPath = editorOptionsPath[selectedOptionIdx];
-                headerTextWithEditorName = $"{headerText} : {targetName}";
                 CodeEditor.SetExternalScriptEditor(targetPath);
             }
             this.selectedOptionIdx = selectedOptionIdx;
+            currentInstallationEditor = editorOptionsName[selectedOptionIdx];
+        }
+
+        bool ShowConfirmDialog(string content)
+        {
+            return EditorUtility.DisplayDialog(
+                "Confirm",
+                $"You are about to change the Script Editor to \n> {content}\nAre you sure?",
+                "Confirm",
+                "Cancel"
+            );
         }
     }
 }

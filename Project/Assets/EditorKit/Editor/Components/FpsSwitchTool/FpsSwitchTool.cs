@@ -5,31 +5,21 @@ using UnityEngine;
 namespace Hayson.EditorKit.Component
 {
     // 由[李育杰]提出需求
-    class FpsSwitchTool : IDrawableComponent
+    class FpsSwitchTool : ComponentBase
     {
-        [InitializeOnLoadMethod]
-        static void RegisterToContainer()
-        {
-            ComponentConfig config = new(nameof(FpsSwitchTool));
-            ComponentContainer.Register<FpsSwitchTool>(config);
-        }
-
         record Option(string Title, int Value);
 
-        readonly string headerPrefix = "Target FPS";
-        readonly string manualSettingHeaderText = "Manual";
-        readonly string manualSettingBtnText = "Apply";
-        readonly string setPreviousValueBtnText = "Set previous value";
+        readonly string currentValueLabelPrefix = "Current";
+        readonly string applyBtnText = "Apply";
+        readonly string infiniteFpsText = "∞";
 
         GUILayoutOption[] toggleLayoutOptions;
-        GUILayoutOption manualSettingFieldHeaderMaxWidth;
-        GUILayoutOption manualSettingFieldMaxWidth;
+        GUILayoutOption applyBtnMaxWidth;
+        GUILayoutOption manualValueInputerMaxWidth;
 
-        Style style;
         GUIStyle labelStyle;
 
-        string previousValueTheaderText;
-        string headerText = string.Empty;
+        string currentValueText;
         int previousSetTimeScale = 1;
         int latestSetFps;
         int customFps;
@@ -43,75 +33,93 @@ namespace Hayson.EditorKit.Component
         };
         string[] optionsTitle;
 
-        void IDrawableComponent.OnEnable()
+        public static ComponentInfo Info => new("Fps Switcher")
         {
-            style = ComponentContainer.styleSheet;
+            Author = "林祐豪",
+            Version = "1.0.0",
+        };
+
+        protected override void OnAfterEnable()
+        {
             optionsTitle = defaultOptions.Select(el => el.Title).ToArray();
             SetFps(Application.targetFrameRate);
         }
 
-        void IDrawableComponent.OnDisable() { }
-
-        void IDrawableComponent.OnUpdateFrame(Rect rect)
+        public override void OnUpdateGUI(Rect rect)
         {
-            if (labelStyle == null)
-            {
-                labelStyle = new GUIStyle(EditorStyles.label);
-                manualSettingFieldHeaderMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent(manualSettingHeaderText)).x);
-                manualSettingFieldMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent("99999999")).x);
-                toggleLayoutOptions = new GUILayoutOption[] { GUILayout.Height(22) };
-            }
+            ValidateStyles();
 
-            using (new EditorGUILayout.VerticalScope(style.Block))
+            using (new EditorGUILayout.VerticalScope())
             {
-                EditorGUILayout.LabelField(headerText, style.H1, style.Title_H1);
-
                 var isUseFps = Application.targetFrameRate;
                 if (isUseFps != latestSetFps)
                 {
                     SetFps(isUseFps);
                 }
 
-                var selectedOptionIdx = GUILayout.Toolbar(GetSelectedIdxByTimeScale(latestSetFps), optionsTitle, toggleLayoutOptions);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button(currentValueText))
+                        SetFps(previousSetTimeScale);
+
+                    customFps = EditorGUILayout.IntField(customFps, manualValueInputerMaxWidth);
+
+                    if (GUILayout.Button(applyBtnText, applyBtnMaxWidth))
+                        SetFps(customFps);
+                }
+
+                var selectedOptionIdx = GUILayout.Toolbar(GetSelectedIdxByValue(latestSetFps), optionsTitle, toggleLayoutOptions);
                 if (selectedOptionIdx != -1 && defaultOptions[selectedOptionIdx].Value != latestSetFps)
                 {
                     SetFps(defaultOptions[selectedOptionIdx].Value);
                 }
-
-                GUILayout.Space(1);
-
-                using (new EditorGUILayout.HorizontalScope())
-                {
-                    EditorGUILayout.LabelField(manualSettingHeaderText, manualSettingFieldHeaderMaxWidth);
-                    customFps = EditorGUILayout.IntField(customFps, manualSettingFieldMaxWidth);
-
-                    if (GUILayout.Button(manualSettingBtnText))
-                        SetFps(customFps);
-
-                    if (GUILayout.Button(previousValueTheaderText))
-                        SetFps(previousSetTimeScale);
-                }
             }
         }
 
-        int GetSelectedIdxByTimeScale(float timeScale)
+        void ValidateStyles()
+        {
+            if (labelStyle == null)
+            {
+                labelStyle = new GUIStyle(EditorStyles.label);
+            }
+            if (applyBtnMaxWidth == null)
+            {
+                applyBtnMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent($"__{applyBtnText}__")).x);
+            }
+            if (manualValueInputerMaxWidth == null)
+            {
+                manualValueInputerMaxWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent("__100_000__")).x);
+            }
+            if (toggleLayoutOptions == null)
+            {
+                toggleLayoutOptions = new GUILayoutOption[] { GUILayout.Height(22) };
+            }
+        }
+
+        int GetSelectedIdxByValue(int value)
         {
             for (int i = 0; i < defaultOptions.Length; i++)
             {
-                if (defaultOptions[i].Value == timeScale)
+                if (defaultOptions[i].Value == value)
                     return i;
             }
+
+            if (IsInfiniteFps(value))
+                return 0;
+
             return -1;
         }
 
         void SetFps(int value)
         {
-            previousSetTimeScale = latestSetFps;
-            previousValueTheaderText = $"{setPreviousValueBtnText} : {previousSetTimeScale}";
+            value = value > 100_000 ? 100_000 : value;
 
-            Application.targetFrameRate = value;
-            latestSetFps = value;
-            headerText = $"{headerPrefix} : {(value <= 0 ? "Unlimited" : value)}";
+            previousSetTimeScale = latestSetFps;
+            Application.targetFrameRate = latestSetFps = value;
+
+            currentValueText = $"{currentValueLabelPrefix} : {(IsInfiniteFps(value) ? infiniteFpsText : value)} (⇆ {(IsInfiniteFps(previousSetTimeScale) ? infiniteFpsText : previousSetTimeScale)})";
         }
+
+        bool IsInfiniteFps(int value) => value <= 0;
     }
 }
