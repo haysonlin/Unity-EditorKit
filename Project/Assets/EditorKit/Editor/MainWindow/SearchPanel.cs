@@ -46,9 +46,9 @@ namespace Hayson.EditorKit.MainWindow
         {
             style = StyleSheet.Instance;
 
-            infoIcon = EditorGUIUtility.Load("Hayson/EditorKit/Icons/info_16dp.png") as Texture2D;
-            openIcon = EditorGUIUtility.Load("Hayson/EditorKit/Icons/open_in_new_16dp.png") as Texture2D;
-            keepIcon = EditorGUIUtility.Load("Hayson/EditorKit/Icons/keep_16dp.png") as Texture2D;
+            infoIcon = EditorGUIUtility.Load(Config.AssetsPath + "/Editor/Icons/info_16dp.png") as Texture2D;
+            openIcon = EditorGUIUtility.Load(Config.AssetsPath + "/Editor/Icons/open_in_new_16dp.png") as Texture2D;
+            keepIcon = EditorGUIUtility.Load(Config.AssetsPath + "/Editor/Icons/keep_16dp.png") as Texture2D;
 
             infoIconContent = new GUIContent(infoIcon, "Open help");
             openIconContent = new GUIContent(openIcon, "Open in new window");
