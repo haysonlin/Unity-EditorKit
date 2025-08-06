@@ -14,13 +14,13 @@ namespace Hayson.EditorKit
 
     public class Config
     {
-        public const string Version = "1.0.0";
+        public const string Version = "1.0.4";
         public const string RepositoryUrl = "https://github.com/haysonlin/Unity-EditorKit/";
 
         // 1️⃣ Project Path
-        public const string AssetsPath = "Assets/EditorKit";
+        // public const string AssetsPath = "Assets/EditorKit";
         // 2️⃣ Package Path
-        // public const string AssetsPath = "Packages/com.haysonlin.editorkit";
+        public const string AssetsPath = "Packages/com.haysonlin.editorkit";
 
         public const string UserSettingsDirectory = "UserSettings";
         public const string EditorKitDirectory = "EditorKit";

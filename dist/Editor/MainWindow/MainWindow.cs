@@ -82,26 +82,26 @@ namespace Hayson.EditorKit.MainWindow
         void OnPinnedPanelRequestPinComp(InstanceData data)
         {
             compMgr.PinComp(data);
-            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type).ToList());
+            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type));
         }
 
         void OnPinnedPanelRequestUnpinComp(InstanceData data)
         {
             compMgr.UnpinComp(data);
-            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type).ToList());
+            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type));
         }
 
         void OnPinnedPanelRequestPopupComp(InstanceData data)
         {
             compMgr.UnpinComp(data);
             ComponentContainerWindow.Create(data);
-            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type).ToList());
+            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type));
         }
 
         void OnSearchPanelRequestPinComp(ComponentConfig el)
         {
             compMgr.PinComp(el);
-            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type).ToList());
+            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type));
         }
 
         void OnSearchPanelRequestOpenComp(ComponentConfig el)

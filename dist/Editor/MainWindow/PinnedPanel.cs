@@ -47,21 +47,13 @@ namespace Hayson.EditorKit.MainWindow
             using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition, false, false))
             {
                 scrollPosition = view.scrollPosition;
-                foreach (var el in comps)
+                if (comps.Count == 0)
                 {
-                    if (el.instanceTarget == null)
-                    {
-                        var compInstance = ComponentManager.InstanceComp(el.type);
-                        el.SetInstanceTarget(compInstance);
-                    }
-                    
-                    var elPerferSize = el.instanceTarget.GetPreferSize();
-                    var minHeightOption = elPerferSize.y > 0 ? GUILayout.MinHeight(elPerferSize.y) : emptyMinHeight;
-                    using (new EditorGUILayout.VerticalScope(style.Block, minHeightOption))
-                    {
-                        DrawCompHeader(el);
-                        el.instanceTarget.OnUpdateGUI(rect);
-                    }
+                    DrawEmptyCompHint();
+                }
+                else
+                {
+                    DrawComponentCard(rect);
                 }
             }
         }
@@ -87,6 +79,31 @@ namespace Hayson.EditorKit.MainWindow
             foreach (var el in tempComps)
             {
                 OnRequestUnpinComp?.Invoke(el);
+            }
+        }
+
+        void DrawEmptyCompHint()
+        {
+            EditorGUILayout.HelpBox("No pinned components\nYou can pin components from the [Browse] panel", MessageType.Info);
+        }
+
+        void DrawComponentCard(Rect rect)
+        {
+            foreach (var el in comps)
+            {
+                if (el.instanceTarget == null)
+                {
+                    var compInstance = ComponentManager.InstanceComp(el.type);
+                    el.SetInstanceTarget(compInstance);
+                }
+
+                var elPerferSize = el.instanceTarget.GetPreferMinSize();
+                var minHeightOption = elPerferSize.y > 0 ? GUILayout.MinHeight(elPerferSize.y) : emptyMinHeight;
+                using (new EditorGUILayout.VerticalScope(style.Block, minHeightOption))
+                {
+                    DrawCompHeader(el);
+                    el.instanceTarget.OnUpdateGUI(rect);
+                }
             }
         }
 

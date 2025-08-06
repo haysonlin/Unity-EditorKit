@@ -119,6 +119,12 @@ namespace Hayson.EditorKit
                 instanceData.SetInstanceTarget(instance);
                 comps.Add(instanceData);
             }
+
+            // 如果實體出來的數量和Stash的數量不一致，則回寫最新可用元件的紀錄
+            if (comps.Count != stashedComps.Count)
+            {
+                ComponentReadWriter.StashComps(comps.Select(el => el.type));
+            }
         }
 
         public static ComponentBase InstanceComp(Type type)

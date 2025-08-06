@@ -22,14 +22,14 @@ namespace Hayson.EditorKit
             return Path.Combine(GetUserSettingsDirectory(), FileName);
         }
 
-        public static void StashComps(List<Type> typesToSave)
+        public static void StashComps(IEnumerable<Type> typesToSave)
         {
             if (typesToSave == null)
             {
                 return;
             }
 
-            List<string> typeFullNames = typesToSave.Select(t => t.FullName).ToList();
+            IEnumerable<string> typeFullNames = typesToSave.Select(t => t.FullName);
 
             try
             {

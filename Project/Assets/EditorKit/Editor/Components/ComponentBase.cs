@@ -6,7 +6,8 @@ namespace Hayson.EditorKit
     public abstract class ComponentBase : ScriptableObject
     {
         // 💡 You need to add static Info property manually.
-        // e.g.
+        // The Info property is used to provide information about the component. 
+        // You can use the following template to add the Info property:
 #if false
         public static ComponentInfo Info => new("Component Name")
         {
@@ -18,13 +19,15 @@ namespace Hayson.EditorKit
 #endif
 
         protected void OnEnable() => OnEndEnable();
+        protected void OnDisable() => OnEndDisable();
+
         protected virtual void OnEndEnable() { }
 
-        protected void OnDisable() => OnEndDisable();
         protected virtual void OnEndDisable() { }
 
         public abstract void OnUpdateGUI(Rect rect);
 
-        public virtual Vector2 GetPreferSize() => Vector2.zero;
+        ///<summary> Get the perfer minimum size of the component </summary>
+        public virtual Vector2 GetPreferMinSize() => Vector2.zero;
     }
 }
