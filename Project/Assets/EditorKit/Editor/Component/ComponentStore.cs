@@ -8,7 +8,7 @@ namespace Hayson.EditorKit
     [Serializable]
     class ComponentStore
     {
-        [SerializeField] List<ComponentData> comps;
+        [SerializeField] List<ComponentData> comps = new();
 
         public IReadOnlyList<ComponentData> Comps => comps;
 
