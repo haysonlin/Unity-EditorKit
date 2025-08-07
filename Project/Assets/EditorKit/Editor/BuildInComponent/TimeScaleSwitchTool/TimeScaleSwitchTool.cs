@@ -4,14 +4,12 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    // 由[李育杰]提出需求
-    class FpsSwitchTool : ComponentBase
+    class TimeScaleSwitchTool : ScriptableObject, IComponent
     {
-        record Option(string Title, int Value);
+        record Option(string Title, float Value);
 
         readonly string currentValueLabelPrefix = "Current";
         readonly string applyBtnText = "Apply";
-        readonly string infiniteFpsText = "∞";
 
         GUILayoutOption[] toggleLayoutOptions;
         GUILayoutOption applyBtnMaxWidth;
@@ -20,59 +18,65 @@ namespace Hayson.EditorKit.Component
         GUIStyle labelStyle;
 
         string currentValueText;
-        int previousSetTimeScale = 1;
-        int latestSetFps;
-        int customFps;
+        float previousSetTimeScale = 1;
+        float latestSetTimeScale;
+        float customTimeScale;
 
         readonly Option[] defaultOptions = new Option[] {
-            new ( "0", 0 ),
-            new ( "30", 30 ),
-            new ( "60", 60 ),
-            new ( "120", 120 ),
-            new ( "240", 240 ),
+            new ("0", 0f ),
+            new ("0.1", 0.1f ),
+            new ("0.25", 0.25f ),
+            new ("0.5", 0.5f ),
+            new ("1", 1f ),
+            new ("2", 2f ),
+            new ("3", 3f ),
+            new ("5", 5f ),
+            new ("10", 10f ),
         };
         string[] optionsTitle;
 
-        public static ComponentInfo Info => new("Fps Switcher")
+        public static ComponentInfo Info => new("TimeScale Switcher")
         {
             Author = "林祐豪",
-            Version = "1.0.0",
+            Version = "1.0.0"
         };
 
-        protected override void OnEndEnable()
+        void IComponent.OnEnable()
         {
             optionsTitle = defaultOptions.Select(el => el.Title).ToArray();
-            SetFps(Application.targetFrameRate);
+            SetTimeScale(Time.timeScale);
         }
 
-        public override void OnUpdateGUI(Rect rect)
+        void IComponent.OnGUI(Rect rect)
         {
             ValidateStyles();
 
             using (new EditorGUILayout.VerticalScope())
             {
-                var isUseFps = Application.targetFrameRate;
-                if (isUseFps != latestSetFps)
-                {
-                    SetFps(isUseFps);
-                }
-
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     if (GUILayout.Button(currentValueText))
-                        SetFps(previousSetTimeScale);
+                        SetTimeScale(previousSetTimeScale);
 
-                    customFps = EditorGUILayout.IntField(customFps, manualValueInputerMaxWidth);
+                    customTimeScale = EditorGUILayout.FloatField(customTimeScale, manualValueInputerMaxWidth);
 
                     if (GUILayout.Button(applyBtnText, applyBtnMaxWidth))
-                        SetFps(customFps);
+                        SetTimeScale(customTimeScale);
                 }
 
-                var selectedOptionIdx = GUILayout.Toolbar(GetSelectedIdxByValue(latestSetFps), optionsTitle, toggleLayoutOptions);
-                if (selectedOptionIdx != -1 && defaultOptions[selectedOptionIdx].Value != latestSetFps)
+                var inUseTimeScale = Time.timeScale;
+                if (inUseTimeScale != latestSetTimeScale)
                 {
-                    SetFps(defaultOptions[selectedOptionIdx].Value);
+                    SetTimeScale(inUseTimeScale);
                 }
+
+                var selectedOptionIdx = GUILayout.Toolbar(GetSelectedIdxByTimeScale(latestSetTimeScale), optionsTitle, toggleLayoutOptions);
+                if (selectedOptionIdx != -1 && defaultOptions[selectedOptionIdx].Value != latestSetTimeScale)
+                {
+                    SetTimeScale(defaultOptions[selectedOptionIdx].Value);
+                }
+
+                GUILayout.Space(1);
             }
         }
 
@@ -96,30 +100,24 @@ namespace Hayson.EditorKit.Component
             }
         }
 
-        int GetSelectedIdxByValue(int value)
+        int GetSelectedIdxByTimeScale(float timeScale)
         {
             for (int i = 0; i < defaultOptions.Length; i++)
             {
-                if (defaultOptions[i].Value == value)
+                if (defaultOptions[i].Value == timeScale)
                     return i;
             }
-
-            if (IsInfiniteFps(value))
-                return 0;
-
             return -1;
         }
 
-        void SetFps(int value)
+        void SetTimeScale(float value)
         {
-            value = value > 100_000 ? 100_000 : value;
+            previousSetTimeScale = latestSetTimeScale;
 
-            previousSetTimeScale = latestSetFps;
-            Application.targetFrameRate = latestSetFps = value;
+            Time.timeScale = value;
+            latestSetTimeScale = value;
 
-            currentValueText = $"{currentValueLabelPrefix} : {(IsInfiniteFps(value) ? infiniteFpsText : value)} (⇆ {(IsInfiniteFps(previousSetTimeScale) ? infiniteFpsText : previousSetTimeScale)})";
+            currentValueText = $"{currentValueLabelPrefix} : {latestSetTimeScale} (⇆ {previousSetTimeScale})";
         }
-
-        bool IsInfiniteFps(int value) => value <= 0;
     }
 }

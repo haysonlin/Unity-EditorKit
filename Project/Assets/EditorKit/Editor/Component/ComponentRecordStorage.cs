@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Hayson.EditorKit
 {
-    public class ComponentReadWriter : ScriptableObject
+    sealed internal class ComponentRecordStorage
     {
         const string FileName = "PinnedComps.txt";
 
@@ -50,24 +50,27 @@ namespace Hayson.EditorKit
             }
         }
 
-        public static List<string> LoadComps()
+        public static bool TryLoadComps(out List<string> stashedComps)
         {
-            string filePath = GetFilePath();
+            var filePath = GetFilePath();
 
             if (!File.Exists(filePath))
             {
-                return new List<string>();
+                stashedComps = new List<string>();
+                return false;
             }
 
             try
             {
                 string[] lines = File.ReadAllLines(filePath);
                 List<string> loadedNames = lines.Where(line => !string.IsNullOrEmpty(line)).ToList();
-                return loadedNames;
+                stashedComps = loadedNames;
+                return true;
             }
             catch (Exception)
             {
-                return new List<string>();
+                stashedComps = new List<string>();
+                return false;
             }
         }
     }

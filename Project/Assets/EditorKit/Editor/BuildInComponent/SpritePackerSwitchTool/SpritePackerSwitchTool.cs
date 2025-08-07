@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    class SpritePackerSwitchTool : ComponentBase
+    class SpritePackerSwitchTool : ScriptableObject, IComponent
     {
         readonly string[] optionsTitle = new string[] { "Disable", "V1", "V2" };
 
@@ -15,12 +15,14 @@ namespace Hayson.EditorKit.Component
             Version = "1.0.0"
         };
 
-        protected override void OnEndEnable()
+        void IComponent.OnEnable()
         {
             usingStateIndex = GetCurrentPackerStateIndex();
         }
 
-        public override void OnUpdateGUI(Rect rect)
+        void IComponent.OnDisable() { }
+
+        void IComponent.OnGUI(Rect rect)
         {
             using (new EditorGUILayout.HorizontalScope())
             {

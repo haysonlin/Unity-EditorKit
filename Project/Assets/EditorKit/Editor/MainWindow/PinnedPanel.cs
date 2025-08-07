@@ -16,15 +16,16 @@ namespace Hayson.EditorKit.MainWindow
 
         GUILayoutOption emptyMinHeight;
 
-        IReadOnlyList<InstanceData> comps;
+        IReadOnlyList<ComponentData> comps;
+        Action requestLoadDefaultComps;
 
-        public event Action<InstanceData> OnRequestPinComp;
-        public event Action<InstanceData> OnRequestUnpinComp;
-        public event Action<InstanceData> OnRequestPopupComp;
+        public event Action<ComponentData> OnRequestUnpinComp;
+        public event Action<ComponentData> OnRequestPopupComp;
 
-        public void Init(IPublicFeature publicFeature, IReadOnlyList<InstanceData> comps)
+        public void Init(IReadOnlyList<ComponentData> comps, Action requestLoadDefaultComps)
         {
             this.comps = comps;
+            this.requestLoadDefaultComps = requestLoadDefaultComps;
             style = StyleSheet.Instance;
         }
 
@@ -34,13 +35,20 @@ namespace Hayson.EditorKit.MainWindow
             menu.AddSeparator(string.Empty);
         }
 
-        public void OnEnable()
+        void ISubPanel.OnEnable()
         {
             emptyMinHeight ??= GUILayout.MinHeight(0);
+
+            foreach (var el in comps)
+            {
+                if (el.instanceObj != null)
+                {
+                    el.Component.OnEnable();
+                }
+            }
         }
 
-        public void OnDisable() { }
-        public void OnUpdateGUI(Rect rect)
+        void ISubPanel.OnGUI(Rect rect)
         {
             ValidateStyles();
 
@@ -75,7 +83,7 @@ namespace Hayson.EditorKit.MainWindow
 
         void UnpinAll()
         {
-            List<InstanceData> tempComps = new(comps);
+            List<ComponentData> tempComps = new(comps);
             foreach (var el in tempComps)
             {
                 OnRequestUnpinComp?.Invoke(el);
@@ -85,29 +93,37 @@ namespace Hayson.EditorKit.MainWindow
         void DrawEmptyCompHint()
         {
             EditorGUILayout.HelpBox("No pinned components\nYou can pin components from the [Browse] panel", MessageType.Info);
+            using (new EditorGUILayout.VerticalScope(style.Block))
+            {
+                if (GUILayout.Button("Load preset components"))
+                {
+                    requestLoadDefaultComps?.Invoke();
+                }
+            }
         }
 
         void DrawComponentCard(Rect rect)
         {
             foreach (var el in comps)
             {
-                if (el.instanceTarget == null)
+                if (el.instanceObj == null)
                 {
-                    var compInstance = ComponentManager.InstanceComp(el.type);
-                    el.SetInstanceTarget(compInstance);
+                    var instanceObj = ComponentInstanceCreator.Create(el.type);
+                    el.SetInstanceObj(instanceObj);
+                    el.Component.OnEnable();
                 }
 
-                var elPerferSize = el.instanceTarget.GetPreferMinSize();
+                var elPerferSize = el.Component.GetPreferMinSize();
                 var minHeightOption = elPerferSize.y > 0 ? GUILayout.MinHeight(elPerferSize.y) : emptyMinHeight;
                 using (new EditorGUILayout.VerticalScope(style.Block, minHeightOption))
                 {
                     DrawCompHeader(el);
-                    el.instanceTarget.OnUpdateGUI(rect);
+                    el.Component.OnGUI(rect);
                 }
             }
         }
 
-        void DrawCompHeader(InstanceData data)
+        void DrawCompHeader(ComponentData data)
         {
             GUILayout.Space(2);
             using (new EditorGUILayout.HorizontalScope())
@@ -122,19 +138,19 @@ namespace Hayson.EditorKit.MainWindow
             GUILayout.Space(4);
         }
 
-        void ShowContextMenu(InstanceData data)
+        void ShowContextMenu(ComponentData data)
         {
             GenericMenu menu = new();
             menu.AddItem(new GUIContent("Unpin"), false, () => UnpinHandler(data));
             menu.AddItem(new GUIContent("Popup"), false, () => PopupHandler(data));
             menu.ShowAsContext();
 
-            void UnpinHandler(InstanceData data)
+            void UnpinHandler(ComponentData data)
             {
                 OnRequestUnpinComp?.Invoke(data);
             }
 
-            void PopupHandler(InstanceData data)
+            void PopupHandler(ComponentData data)
             {
                 OnRequestPopupComp?.Invoke(data);
             }

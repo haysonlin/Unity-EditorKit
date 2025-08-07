@@ -1,6 +1,8 @@
 using System.Linq;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using Hayson.EditorKit.Component;
 
 namespace Hayson.EditorKit.MainWindow
 {
@@ -20,9 +22,9 @@ namespace Hayson.EditorKit.MainWindow
             window.minSize = new(300, 300);
         }
 
-        PinnedPanel pinnedPanel = new();
-        SearchPanel searchPanel = new();
-        ComponentManager compMgr = new();
+        [SerializeField] PinnedPanel pinnedPanel = new();
+        [SerializeField] SearchPanel searchPanel = new();
+        [SerializeField] ComponentStore compMgr = new();
 
         PanelData[] panelTable;
 
@@ -33,8 +35,7 @@ namespace Hayson.EditorKit.MainWindow
         {
             compMgr.Setup(ComponentRegistry.Infos);
 
-            pinnedPanel.Init(this, compMgr.Comps);
-            pinnedPanel.OnRequestPinComp += OnPinnedPanelRequestPinComp;
+            pinnedPanel.Init(compMgr.Comps, PinPresetComps);
             pinnedPanel.OnRequestUnpinComp += OnPinnedPanelRequestUnpinComp;
             pinnedPanel.OnRequestPopupComp += OnPinnedPanelRequestPopupComp;
 
@@ -75,41 +76,42 @@ namespace Hayson.EditorKit.MainWindow
             using (new EditorGUILayout.VerticalScope())
             {
                 currentPanelIdx = GUILayout.Toolbar(currentPanelIdx, panelsNameCache);
-                panelTable[currentPanelIdx].Panel.OnUpdateGUI(position);
+                panelTable[currentPanelIdx].Panel.OnGUI(position);
             }
         }
 
-        void OnPinnedPanelRequestPinComp(InstanceData data)
+        void OnPinnedPanelRequestPinComp(ComponentData data)
         {
             compMgr.PinComp(data);
-            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type));
+            ComponentRecordStorage.StashComps(compMgr.Comps.Select(el => el.type));
         }
 
-        void OnPinnedPanelRequestUnpinComp(InstanceData data)
+        void OnPinnedPanelRequestUnpinComp(ComponentData data)
         {
             compMgr.UnpinComp(data);
-            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type));
+            ComponentRecordStorage.StashComps(compMgr.Comps.Select(el => el.type));
         }
 
-        void OnPinnedPanelRequestPopupComp(InstanceData data)
+        void OnPinnedPanelRequestPopupComp(ComponentData data)
         {
             compMgr.UnpinComp(data);
             ComponentContainerWindow.Create(data);
-            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type));
+            ComponentRecordStorage.StashComps(compMgr.Comps.Select(el => el.type));
         }
 
         void OnSearchPanelRequestPinComp(ComponentConfig el)
         {
             compMgr.PinComp(el);
-            ComponentReadWriter.StashComps(compMgr.Comps.Select(el => el.type));
+            ComponentRecordStorage.StashComps(compMgr.Comps.Select(el => el.type));
         }
 
         void OnSearchPanelRequestOpenComp(ComponentConfig el)
         {
-            var instance = ComponentManager.InstanceComp(el.type);
-            var compData = new InstanceData();
+            var instanceObj = ComponentInstanceCreator.Create(el.type);
+            var compData = new ComponentData();
             compData.SetCompInfo(el);
-            compData.SetInstanceTarget(instance);
+            compData.SetInstanceObj(instanceObj);
+            compData.Component.OnEnable();
 
             var mainWindow = GetWindow<MainWindow>();
             var windowPos = mainWindow.position;
@@ -119,6 +121,36 @@ namespace Hayson.EditorKit.MainWindow
 
             var window = ComponentContainerWindow.Create(compData);
             window.position = windowPos;
+        }
+
+        void PinPresetComps()
+        {
+            var list = new List<ComponentConfig>();
+
+            var spritePacker = compMgr.CompsConfig.FirstOrDefault(el => el.type == typeof(SpritePackerSwitchTool));
+            if (spritePacker != null)
+            {
+                list.Add(spritePacker);
+            }
+
+            var timeScaleSwitcher = compMgr.CompsConfig.FirstOrDefault(el => el.type == typeof(TimeScaleSwitchTool));
+            if (timeScaleSwitcher != null)
+            {
+                list.Add(timeScaleSwitcher);
+            }
+
+            if (list.Count == 0)
+            {
+                Debug.LogError("Failed to find preset components");
+            }
+            else
+            {
+                foreach (var item in list)
+                {
+                    compMgr.PinComp(item);
+                }
+                ComponentRecordStorage.StashComps(compMgr.Comps.Select(el => el.type));
+            }
         }
 
         void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)

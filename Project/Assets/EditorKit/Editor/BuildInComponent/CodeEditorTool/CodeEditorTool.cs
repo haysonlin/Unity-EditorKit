@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    class CodeEditorTool : ComponentBase
+    class CodeEditorTool : ScriptableObject, IComponent
     {
         readonly string selectorHeaderText = "Select";
         readonly string domainReloadBtnText = "Reload Domain";
@@ -28,7 +28,7 @@ namespace Hayson.EditorKit.Component
             Version = "1.0.0"
         };
 
-        protected override void OnEndEnable()
+        void IComponent.OnEnable()
         {
             codeEditor = CodeEditor.Editor;
 
@@ -44,7 +44,7 @@ namespace Hayson.EditorKit.Component
             }
         }
 
-        public override void OnUpdateGUI(Rect rect)
+        void IComponent.OnGUI(Rect rect)
         {
             ValidateStyles();
             FetchCurrentEditor();

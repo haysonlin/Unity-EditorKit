@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Hayson.EditorKit.Component
 {
-    class ScreenShotTool : ComponentBase
+    class ScreenShotTool : ScriptableObject, IComponent
     {
         StyleSheet style;
         GUIStyle labelStyle;
@@ -20,12 +20,12 @@ namespace Hayson.EditorKit.Component
             Version = "1.0.0"
         };
 
-        protected override void OnEndEnable()
+        void IComponent.OnEnable()
         {
             style = StyleSheet.Instance;
         }
 
-        public override void OnUpdateGUI(Rect rect)
+        void IComponent.OnGUI(Rect rect)
         {
             if (labelStyle == null)
             {

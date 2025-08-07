@@ -10,12 +10,11 @@ namespace Hayson.EditorKit.MainWindow
     class SearchPanel : ISubPanel
     {
         IPublicFeature publicFeature;
-        ComponentManager compMgr;
+        ComponentStore compMgr;
         ISearcher searcher;
         StyleSheet style;
 
         readonly Color gray75 = new(0.75f, 0.75f, 0.75f, 1);
-        GUIStyle labelStyle;
 
         Texture2D infoIcon;
         Texture2D openIcon;
@@ -32,17 +31,15 @@ namespace Hayson.EditorKit.MainWindow
         public event Action<ComponentConfig> OnRequestPinComp;
         public event Action<ComponentConfig> OnRequestOpenComp;
 
-        void ISubPanel.AddItemsToMenu(GenericMenu menu) { }
-
-        public void Init(IPublicFeature publicFeature, ComponentManager compMgr)
+        public void Init(IPublicFeature publicFeature, ComponentStore compMgr)
         {
             this.publicFeature = publicFeature;
             this.compMgr = compMgr;
             searcher = SearcherManager.GetSearcher();
-            searchResult = compMgr.CompsConfigs;
+            searchResult = compMgr.CompsConfig;
         }
 
-        public void OnEnable()
+        void ISubPanel.OnEnable()
         {
             style = StyleSheet.Instance;
 
@@ -55,10 +52,8 @@ namespace Hayson.EditorKit.MainWindow
             keepIconContent = new GUIContent(keepIcon, "Pin it");
         }
 
-        public void OnDisable() { }
-        public void OnUpdateGUI(Rect rect)
+        void ISubPanel.OnGUI(Rect rect)
         {
-            ValidateStyles();
             DrawSearchBar();
 
             using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition, false, false))
@@ -71,14 +66,6 @@ namespace Hayson.EditorKit.MainWindow
             }
         }
 
-        void ValidateStyles()
-        {
-            if (labelStyle == null)
-            {
-                labelStyle = new GUIStyle(EditorStyles.label);
-            }
-        }
-
         void DrawSearchBar()
         {
             EditorGUI.BeginChangeCheck();
@@ -88,13 +75,13 @@ namespace Hayson.EditorKit.MainWindow
                 var tempSearchString = searchingString;
                 if (string.IsNullOrEmpty(tempSearchString))
                 {
-                    searchResult = compMgr.CompsConfigs;
+                    searchResult = compMgr.CompsConfig;
                 }
                 else
                 {
                     searcher.Search(tempSearchString, result =>
                     {
-                        searchResult = result.Select(el => compMgr.CompsConfigs.First(item => item.type.FullName == el)).ToList();
+                        searchResult = result.Select(el => compMgr.CompsConfig.First(item => item.type.FullName == el)).ToList();
                     });
                 }
             }
